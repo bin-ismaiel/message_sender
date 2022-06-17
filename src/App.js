@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-
-import MessagesList from "./components/MessagesList";
+import axios from "axios";
 import AddMessage from "./components/AddMessage";
+import MessagesList from "./components/MessagesList";
 import "./App.css";
 function App() {
   const [messages, setMessages] = useState([]);
@@ -12,15 +12,16 @@ function App() {
     setError(null);
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://reactt-apii-default-rtdb.firebaseio.com/message.json"
+      const response = await axios(
+        "https://reactt-apii-default-rtdb.firebaseio.com/message.json",
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
       );
 
-      if (!response.ok) {
-        throw new Error("Something went Wrong !");
-      }
-
-      const data = await response.json();
+      const data = response.data;
 
       const loadedMessages = [];
 
@@ -35,22 +36,25 @@ function App() {
 
       setMessages(loadedMessages.reverse());
     } catch (error) {
-      setError(error.message);
+      console.log(Error(error.code));
+      setError(`Something went wrong !`);
     }
     setLoading(false);
   }
 
-  async function addMessageHandler(message) {
-    const response = await fetch(
-      "https://reactt-apii-default-rtdb.firebaseio.com/message.json",
-      {
-        method: "POST",
-        body: JSON.stringify(message),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+  async function addMessageHandler({ title, text, name }) {
+    try {
+      const response = await axios.post(
+        "https://reactt-apii-default-rtdb.firebaseio.com/message.json",
+        {
+          title: title,
+          text: text,
+          name: name,
+        }
+      );
+    } catch (error) {
+      console.log(error.code);
+    }
   }
 
   let content = <p>No Messages</p>;
